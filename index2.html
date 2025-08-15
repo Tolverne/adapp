@@ -15,12 +15,11 @@
             font-family: 'Comic Sans MS', cursive, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         .container {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-columns: 280px 1fr 280px;
             height: 100vh;
             gap: 10px;
             padding: 10px;
@@ -92,14 +91,16 @@
             background: rgba(255, 107, 107, 0.1);
             border-radius: 10px;
             transition: all 0.3s ease;
+            user-select: none;
         }
 
         .category-title:hover {
             background: rgba(255, 107, 107, 0.2);
         }
 
-        .category-title.collapsed::after {
+        .category-title::after {
             content: ' ▼';
+            float: right;
         }
 
         .category-title.expanded::after {
@@ -108,29 +109,32 @@
 
         .asset-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
             gap: 8px;
+            max-height: 200px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
         .asset-grid.hidden {
-            display: none;
+            max-height: 0;
+            overflow: hidden;
         }
 
         .asset-item {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             background: white;
             border: 2px solid #ddd;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: grab;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            font-size: 2em;
+            font-size: 1.8em;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            user-select: none;
         }
 
         .asset-item:hover {
@@ -139,31 +143,27 @@
             box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
 
-        .asset-item:active {
-            cursor: grabbing;
-        }
-
-        .draggable-item {
+        .canvas-item {
             position: absolute;
+            font-size: 3em;
             cursor: move;
-            transition: transform 0.1s ease;
-            z-index: 100;
+            user-select: none;
             border: 2px solid transparent;
             border-radius: 8px;
-            user-select: none;
+            padding: 5px;
+            transition: border-color 0.2s ease;
         }
 
-        .draggable-item:hover {
+        .canvas-item:hover {
             border-color: #ff6b6b;
-            transform: scale(1.05);
         }
 
-        .draggable-item.selected {
+        .canvas-item.selected {
             border-color: #4ecdc4;
             box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
         }
 
-        .draggable-item .delete-btn {
+        .canvas-item .delete-btn {
             position: absolute;
             top: -8px;
             right: -8px;
@@ -181,8 +181,8 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .draggable-item:hover .delete-btn,
-        .draggable-item.selected .delete-btn {
+        .canvas-item:hover .delete-btn,
+        .canvas-item.selected .delete-btn {
             display: flex;
         }
 
@@ -223,18 +223,6 @@
             background: #ff5252;
         }
 
-        .layers-info {
-            position: absolute;
-            top: 80px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.9em;
-            color: #666;
-            max-width: 200px;
-        }
-
         .size-controls {
             margin-top: 15px;
             padding: 10px;
@@ -246,6 +234,7 @@
             color: #4ecdc4;
             font-weight: bold;
             margin-bottom: 8px;
+            font-size: 0.9em;
         }
 
         .size-buttons {
@@ -258,10 +247,10 @@
             background: white;
             border: 2px solid #4ecdc4;
             color: #4ecdc4;
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 5px 8px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 0.7em;
             transition: all 0.3s ease;
         }
 
@@ -270,125 +259,112 @@
             color: white;
         }
 
+        .tips {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: #666;
+            max-width: 200px;
+            z-index: 1000;
+        }
+
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
                 grid-template-rows: auto 1fr auto;
-                height: 100vh;
             }
             
             .asset-panel {
-                max-height: 200px;
+                max-height: 150px;
             }
             
-            .canvas-area {
-                min-height: 400px;
+            .tips {
+                display: none;
             }
-        }
-
-        .drag-helper {
-            position: fixed;
-            pointer-events: none;
-            z-index: 10000;
-            font-size: 2em;
-            transform: translate(-50%, -50%);
-            opacity: 0.8;
-        }
-
-        .drop-zone {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 3px dashed transparent;
-            transition: all 0.3s ease;
-        }
-
-        .drop-zone.drag-over {
-            border-color: #4ecdc4;
-            background: rgba(78, 205, 196, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Left Panel - Character Parts -->
+        <!-- Left Panel -->
         <div class="asset-panel">
-            <h3 class="panel-title">👤 Character Parts</h3>
+            <h3 class="panel-title">👤 Characters</h3>
             
             <div class="asset-category">
-                <div class="category-title expanded" onclick="toggleCategory(this)">👥 Bodies</div>
+                <div class="category-title" onclick="toggleCategory(this)">👥 People</div>
                 <div class="asset-grid">
-                    <div class="asset-item" data-asset="🧍" data-category="body">🧍</div>
-                    <div class="asset-item" data-asset="🧍‍♀️" data-category="body">🧍‍♀️</div>
-                    <div class="asset-item" data-asset="🧍‍♂️" data-category="body">🧍‍♂️</div>
-                    <div class="asset-item" data-asset="👶" data-category="body">👶</div>
-                    <div class="asset-item" data-asset="🧒" data-category="body">🧒</div>
-                    <div class="asset-item" data-asset="👧" data-category="body">👧</div>
-                    <div class="asset-item" data-asset="🧑" data-category="body">🧑</div>
-                    <div class="asset-item" data-asset="👨" data-category="body">👨</div>
-                    <div class="asset-item" data-asset="👩" data-category="body">👩</div>
-                    <div class="asset-item" data-asset="🧓" data-category="body">🧓</div>
-                    <div class="asset-item" data-asset="👴" data-category="body">👴</div>
-                    <div class="asset-item" data-asset="👵" data-category="body">👵</div>
+                    <div class="asset-item" onclick="addToCanvas('🧍')">🧍</div>
+                    <div class="asset-item" onclick="addToCanvas('🧍‍♀️')">🧍‍♀️</div>
+                    <div class="asset-item" onclick="addToCanvas('🧍‍♂️')">🧍‍♂️</div>
+                    <div class="asset-item" onclick="addToCanvas('👶')">👶</div>
+                    <div class="asset-item" onclick="addToCanvas('🧒')">🧒</div>
+                    <div class="asset-item" onclick="addToCanvas('👧')">👧</div>
+                    <div class="asset-item" onclick="addToCanvas('🧑')">🧑</div>
+                    <div class="asset-item" onclick="addToCanvas('👨')">👨</div>
+                    <div class="asset-item" onclick="addToCanvas('👩')">👩</div>
+                    <div class="asset-item" onclick="addToCanvas('🧓')">🧓</div>
+                    <div class="asset-item" onclick="addToCanvas('👴')">👴</div>
+                    <div class="asset-item" onclick="addToCanvas('👵')">👵</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">👗 Clothes</div>
+                <div class="category-title" onclick="toggleCategory(this)">👗 Clothes</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="👔" data-category="clothes">👔</div>
-                    <div class="asset-item" data-asset="👕" data-category="clothes">👕</div>
-                    <div class="asset-item" data-asset="👖" data-category="clothes">👖</div>
-                    <div class="asset-item" data-asset="👗" data-category="clothes">👗</div>
-                    <div class="asset-item" data-asset="👘" data-category="clothes">👘</div>
-                    <div class="asset-item" data-asset="👚" data-category="clothes">👚</div>
-                    <div class="asset-item" data-asset="👙" data-category="clothes">👙</div>
-                    <div class="asset-item" data-asset="🩱" data-category="clothes">🩱</div>
-                    <div class="asset-item" data-asset="🩲" data-category="clothes">🩲</div>
-                    <div class="asset-item" data-asset="🩳" data-category="clothes">🩳</div>
-                    <div class="asset-item" data-asset="🧥" data-category="clothes">🧥</div>
-                    <div class="asset-item" data-asset="🧦" data-category="clothes">🧦</div>
+                    <div class="asset-item" onclick="addToCanvas('👔')">👔</div>
+                    <div class="asset-item" onclick="addToCanvas('👕')">👕</div>
+                    <div class="asset-item" onclick="addToCanvas('👖')">👖</div>
+                    <div class="asset-item" onclick="addToCanvas('👗')">👗</div>
+                    <div class="asset-item" onclick="addToCanvas('👘')">👘</div>
+                    <div class="asset-item" onclick="addToCanvas('👚')">👚</div>
+                    <div class="asset-item" onclick="addToCanvas('🩱')">🩱</div>
+                    <div class="asset-item" onclick="addToCanvas('🩲')">🩲</div>
+                    <div class="asset-item" onclick="addToCanvas('🩳')">🩳</div>
+                    <div class="asset-item" onclick="addToCanvas('🧥')">🧥</div>
+                    <div class="asset-item" onclick="addToCanvas('🧦')">🧦</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">👟 Shoes</div>
+                <div class="category-title" onclick="toggleCategory(this)">👟 Shoes</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="👟" data-category="shoes">👟</div>
-                    <div class="asset-item" data-asset="👠" data-category="shoes">👠</div>
-                    <div class="asset-item" data-asset="👡" data-category="shoes">👡</div>
-                    <div class="asset-item" data-asset="👢" data-category="shoes">👢</div>
-                    <div class="asset-item" data-asset="👞" data-category="shoes">👞</div>
-                    <div class="asset-item" data-asset="🥿" data-category="shoes">🥿</div>
-                    <div class="asset-item" data-asset="🩴" data-category="shoes">🩴</div>
-                    <div class="asset-item" data-asset="🥾" data-category="shoes">🥾</div>
-                    <div class="asset-item" data-asset="🩰" data-category="shoes">🩰</div>
+                    <div class="asset-item" onclick="addToCanvas('👟')">👟</div>
+                    <div class="asset-item" onclick="addToCanvas('👠')">👠</div>
+                    <div class="asset-item" onclick="addToCanvas('👡')">👡</div>
+                    <div class="asset-item" onclick="addToCanvas('👢')">👢</div>
+                    <div class="asset-item" onclick="addToCanvas('👞')">👞</div>
+                    <div class="asset-item" onclick="addToCanvas('🥿')">🥿</div>
+                    <div class="asset-item" onclick="addToCanvas('🩴')">🩴</div>
+                    <div class="asset-item" onclick="addToCanvas('🥾')">🥾</div>
+                    <div class="asset-item" onclick="addToCanvas('🩰')">🩰</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">🎭 Faces</div>
+                <div class="category-title" onclick="toggleCategory(this)">🎭 Faces</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="😀" data-category="face">😀</div>
-                    <div class="asset-item" data-asset="😃" data-category="face">😃</div>
-                    <div class="asset-item" data-asset="😄" data-category="face">😄</div>
-                    <div class="asset-item" data-asset="😁" data-category="face">😁</div>
-                    <div class="asset-item" data-asset="😅" data-category="face">😅</div>
-                    <div class="asset-item" data-asset="😂" data-category="face">😂</div>
-                    <div class="asset-item" data-asset="🙂" data-category="face">🙂</div>
-                    <div class="asset-item" data-asset="😉" data-category="face">😉</div>
-                    <div class="asset-item" data-asset="😊" data-category="face">😊</div>
-                    <div class="asset-item" data-asset="😇" data-category="face">😇</div>
-                    <div class="asset-item" data-asset="😋" data-category="face">😋</div>
-                    <div class="asset-item" data-asset="😎" data-category="face">😎</div>
-                    <div class="asset-item" data-asset="🤓" data-category="face">🤓</div>
-                    <div class="asset-item" data-asset="😐" data-category="face">😐</div>
-                    <div class="asset-item" data-asset="😕" data-category="face">😕</div>
-                    <div class="asset-item" data-asset="😟" data-category="face">😟</div>
-                    <div class="asset-item" data-asset="😮" data-category="face">😮</div>
-                    <div class="asset-item" data-asset="😯" data-category="face">😯</div>
+                    <div class="asset-item" onclick="addToCanvas('😀')">😀</div>
+                    <div class="asset-item" onclick="addToCanvas('😃')">😃</div>
+                    <div class="asset-item" onclick="addToCanvas('😄')">😄</div>
+                    <div class="asset-item" onclick="addToCanvas('😁')">😁</div>
+                    <div class="asset-item" onclick="addToCanvas('😅')">😅</div>
+                    <div class="asset-item" onclick="addToCanvas('😂')">😂</div>
+                    <div class="asset-item" onclick="addToCanvas('🙂')">🙂</div>
+                    <div class="asset-item" onclick="addToCanvas('😉')">😉</div>
+                    <div class="asset-item" onclick="addToCanvas('😊')">😊</div>
+                    <div class="asset-item" onclick="addToCanvas('😇')">😇</div>
+                    <div class="asset-item" onclick="addToCanvas('😋')">😋</div>
+                    <div class="asset-item" onclick="addToCanvas('😎')">😎</div>
+                    <div class="asset-item" onclick="addToCanvas('🤓')">🤓</div>
+                    <div class="asset-item" onclick="addToCanvas('😐')">😐</div>
+                    <div class="asset-item" onclick="addToCanvas('😕')">😕</div>
+                    <div class="asset-item" onclick="addToCanvas('😟')">😟</div>
+                    <div class="asset-item" onclick="addToCanvas('😮')">😮</div>
+                    <div class="asset-item" onclick="addToCanvas('😯')">😯</div>
                 </div>
             </div>
 
@@ -404,458 +380,261 @@
             </div>
         </div>
 
-        <!-- Center - Canvas -->
+        <!-- Center Canvas -->
         <div class="canvas-area">
-            <div class="canvas-title">🎨 Drag & Drop Character Builder 🎨</div>
-            <div class="canvas" id="canvas">
-                <div class="drop-zone" id="dropZone"></div>
-            </div>
+            <div class="canvas-title">🎨 Click items to add them! 🎨</div>
+            <div class="canvas" id="canvas"></div>
+            
             <div class="control-panel">
-                <button class="control-btn" onclick="saveCharacter()">💾 Save</button>
                 <button class="control-btn clear-btn" onclick="clearCanvas()">🗑️ Clear All</button>
                 <button class="control-btn" onclick="randomCharacter()">🎲 Random</button>
             </div>
-            <div class="layers-info">
-                <strong>💡 Tips:</strong><br>
-                • Drag items from the panels<br>
-                • Click items to select/move<br>
-                • Use resize buttons<br>
-                • Layer items on top of each other<br>
-                • Have fun creating!
+            
+            <div class="tips">
+                <strong>💡 How to use:</strong><br>
+                • Click any item to add it to canvas<br>
+                • Click canvas items to select them<br>
+                • Drag items to move them<br>
+                • Use resize buttons when item is selected<br>
+                • Click X to delete items
             </div>
         </div>
 
-        <!-- Right Panel - Accessories & Effects -->
+        <!-- Right Panel -->
         <div class="asset-panel">
-            <h3 class="panel-title">✨ Accessories & More</h3>
+            <h3 class="panel-title">✨ Accessories</h3>
             
             <div class="asset-category">
-                <div class="category-title expanded" onclick="toggleCategory(this)">👑 Hats & Hair</div>
+                <div class="category-title" onclick="toggleCategory(this)">👑 Hats</div>
                 <div class="asset-grid">
-                    <div class="asset-item" data-asset="👑" data-category="hat">👑</div>
-                    <div class="asset-item" data-asset="👒" data-category="hat">👒</div>
-                    <div class="asset-item" data-asset="🎓" data-category="hat">🎓</div>
-                    <div class="asset-item" data-asset="🧢" data-category="hat">🧢</div>
-                    <div class="asset-item" data-asset="⛑️" data-category="hat">⛑️</div>
-                    <div class="asset-item" data-asset="🎩" data-category="hat">🎩</div>
-                    <div class="asset-item" data-asset="👶" data-category="hair">👶</div>
-                    <div class="asset-item" data-asset="🦳" data-category="hair">🦳</div>
-                    <div class="asset-item" data-asset="🦲" data-category="hair">🦲</div>
+                    <div class="asset-item" onclick="addToCanvas('👑')">👑</div>
+                    <div class="asset-item" onclick="addToCanvas('👒')">👒</div>
+                    <div class="asset-item" onclick="addToCanvas('🎓')">🎓</div>
+                    <div class="asset-item" onclick="addToCanvas('🧢')">🧢</div>
+                    <div class="asset-item" onclick="addToCanvas('⛑️')">⛑️</div>
+                    <div class="asset-item" onclick="addToCanvas('🎩')">🎩</div>
+                    <div class="asset-item" onclick="addToCanvas('🪖')">🪖</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">🕶️ Glasses & Eyes</div>
+                <div class="category-title" onclick="toggleCategory(this)">🕶️ Glasses</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="🕶️" data-category="glasses">🕶️</div>
-                    <div class="asset-item" data-asset="👓" data-category="glasses">👓</div>
-                    <div class="asset-item" data-asset="🥽" data-category="glasses">🥽</div>
-                    <div class="asset-item" data-asset="👁️" data-category="eyes">👁️</div>
-                    <div class="asset-item" data-asset="👀" data-category="eyes">👀</div>
+                    <div class="asset-item" onclick="addToCanvas('🕶️')">🕶️</div>
+                    <div class="asset-item" onclick="addToCanvas('👓')">👓</div>
+                    <div class="asset-item" onclick="addToCanvas('🥽')">🥽</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">🎒 Bags & Items</div>
+                <div class="category-title" onclick="toggleCategory(this)">🎒 Bags</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="🎒" data-category="bag">🎒</div>
-                    <div class="asset-item" data-asset="👜" data-category="bag">👜</div>
-                    <div class="asset-item" data-asset="👝" data-category="bag">👝</div>
-                    <div class="asset-item" data-asset="🛍️" data-category="bag">🛍️</div>
-                    <div class="asset-item" data-asset="💼" data-category="bag">💼</div>
-                    <div class="asset-item" data-asset="⚽" data-category="item">⚽</div>
-                    <div class="asset-item" data-asset="🏀" data-category="item">🏀</div>
-                    <div class="asset-item" data-asset="📱" data-category="item">📱</div>
-                    <div class="asset-item" data-asset="🎮" data-category="item">🎮</div>
-                    <div class="asset-item" data-asset="📚" data-category="item">📚</div>
+                    <div class="asset-item" onclick="addToCanvas('🎒')">🎒</div>
+                    <div class="asset-item" onclick="addToCanvas('👜')">👜</div>
+                    <div class="asset-item" onclick="addToCanvas('👝')">👝</div>
+                    <div class="asset-item" onclick="addToCanvas('🛍️')">🛍️</div>
+                    <div class="asset-item" onclick="addToCanvas('💼')">💼</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">🌟 Magic & Fantasy</div>
+                <div class="category-title" onclick="toggleCategory(this)">🌟 Magic</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="🧙‍♀️" data-category="fantasy">🧙‍♀️</div>
-                    <div class="asset-item" data-asset="🧙‍♂️" data-category="fantasy">🧙‍♂️</div>
-                    <div class="asset-item" data-asset="🧚‍♀️" data-category="fantasy">🧚‍♀️</div>
-                    <div class="asset-item" data-asset="🧚‍♂️" data-category="fantasy">🧚‍♂️</div>
-                    <div class="asset-item" data-asset="🦸‍♀️" data-category="fantasy">🦸‍♀️</div>
-                    <div class="asset-item" data-asset="🦸‍♂️" data-category="fantasy">🦸‍♂️</div>
-                    <div class="asset-item" data-asset="🦹‍♀️" data-category="fantasy">🦹‍♀️</div>
-                    <div class="asset-item" data-asset="🦹‍♂️" data-category="fantasy">🦹‍♂️</div>
-                    <div class="asset-item" data-asset="⭐" data-category="effect">⭐</div>
-                    <div class="asset-item" data-asset="✨" data-category="effect">✨</div>
-                    <div class="asset-item" data-asset="💫" data-category="effect">💫</div>
-                    <div class="asset-item" data-asset="🌟" data-category="effect">🌟</div>
-                    <div class="asset-item" data-asset="💖" data-category="effect">💖</div>
-                    <div class="asset-item" data-asset="💝" data-category="effect">💝</div>
-                    <div class="asset-item" data-asset="🎁" data-category="effect">🎁</div>
+                    <div class="asset-item" onclick="addToCanvas('🧙‍♀️')">🧙‍♀️</div>
+                    <div class="asset-item" onclick="addToCanvas('🧙‍♂️')">🧙‍♂️</div>
+                    <div class="asset-item" onclick="addToCanvas('🧚‍♀️')">🧚‍♀️</div>
+                    <div class="asset-item" onclick="addToCanvas('🧚‍♂️')">🧚‍♂️</div>
+                    <div class="asset-item" onclick="addToCanvas('🦸‍♀️')">🦸‍♀️</div>
+                    <div class="asset-item" onclick="addToCanvas('🦸‍♂️')">🦸‍♂️</div>
+                    <div class="asset-item" onclick="addToCanvas('⭐')">⭐</div>
+                    <div class="asset-item" onclick="addToCanvas('✨')">✨</div>
+                    <div class="asset-item" onclick="addToCanvas('💫')">💫</div>
+                    <div class="asset-item" onclick="addToCanvas('🌟')">🌟</div>
+                    <div class="asset-item" onclick="addToCanvas('💖')">💖</div>
+                    <div class="asset-item" onclick="addToCanvas('🎁')">🎁</div>
                 </div>
             </div>
 
             <div class="asset-category">
-                <div class="category-title collapsed" onclick="toggleCategory(this)">🐾 Animals & Pets</div>
+                <div class="category-title" onclick="toggleCategory(this)">🐾 Animals</div>
                 <div class="asset-grid hidden">
-                    <div class="asset-item" data-asset="🐶" data-category="animal">🐶</div>
-                    <div class="asset-item" data-asset="🐱" data-category="animal">🐱</div>
-                    <div class="asset-item" data-asset="🐭" data-category="animal">🐭</div>
-                    <div class="asset-item" data-asset="🐹" data-category="animal">🐹</div>
-                    <div class="asset-item" data-asset="🐰" data-category="animal">🐰</div>
-                    <div class="asset-item" data-asset="🦊" data-category="animal">🦊</div>
-                    <div class="asset-item" data-asset="🐻" data-category="animal">🐻</div>
-                    <div class="asset-item" data-asset="🐼" data-category="animal">🐼</div>
-                    <div class="asset-item" data-asset="🐨" data-category="animal">🐨</div>
-                    <div class="asset-item" data-asset="🐯" data-category="animal">🐯</div>
-                    <div class="asset-item" data-asset="🦁" data-category="animal">🦁</div>
-                    <div class="asset-item" data-asset="🐸" data-category="animal">🐸</div>
+                    <div class="asset-item" onclick="addToCanvas('🐶')">🐶</div>
+                    <div class="asset-item" onclick="addToCanvas('🐱')">🐱</div>
+                    <div class="asset-item" onclick="addToCanvas('🐭')">🐭</div>
+                    <div class="asset-item" onclick="addToCanvas('🐹')">🐹</div>
+                    <div class="asset-item" onclick="addToCanvas('🐰')">🐰</div>
+                    <div class="asset-item" onclick="addToCanvas('🦊')">🦊</div>
+                    <div class="asset-item" onclick="addToCanvas('🐻')">🐻</div>
+                    <div class="asset-item" onclick="addToCanvas('🐼')">🐼</div>
+                    <div class="asset-item" onclick="addToCanvas('🐨')">🐨</div>
+                    <div class="asset-item" onclick="addToCanvas('🐯')">🐯</div>
+                    <div class="asset-item" onclick="addToCanvas('🦁')">🦁</div>
+                    <div class="asset-item" onclick="addToCanvas('🐸')">🐸</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title" onclick="toggleCategory(this)">🎮 Objects</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" onclick="addToCanvas('⚽')">⚽</div>
+                    <div class="asset-item" onclick="addToCanvas('🏀')">🏀</div>
+                    <div class="asset-item" onclick="addToCanvas('📱')">📱</div>
+                    <div class="asset-item" onclick="addToCanvas('🎮')">🎮</div>
+                    <div class="asset-item" onclick="addToCanvas('📚')">📚</div>
+                    <div class="asset-item" onclick="addToCanvas('🎸')">🎸</div>
+                    <div class="asset-item" onclick="addToCanvas('🎨')">🎨</div>
+                    <div class="asset-item" onclick="addToCanvas('🚗')">🚗</div>
+                    <div class="asset-item" onclick="addToCanvas('✈️')">✈️</div>
+                    <div class="asset-item" onclick="addToCanvas('🚀')">🚀</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let draggedAsset = null;
-        let selectedElement = null;
-        let dragHelper = null;
-        let canvasItems = [];
         let itemCounter = 0;
+        let selectedItem = null;
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
 
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeDragAndDrop();
-            setupCanvasInteractions();
-        });
-
-        function initializeDragAndDrop() {
-            // Add drag functionality to asset items
-            document.querySelectorAll('.asset-item').forEach(item => {
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('drag', handleDrag);
-                item.addEventListener('dragend', handleDragEnd);
-                item.draggable = true;
-            });
-
-            // Setup canvas drop zone
-            const dropZone = document.getElementById('dropZone');
-            dropZone.addEventListener('dragover', handleDragOver);
-            dropZone.addEventListener('dragenter', handleDragEnter);
-            dropZone.addEventListener('dragleave', handleDragLeave);
-            dropZone.addEventListener('drop', handleDrop);
-        }
-
-        function handleDragStart(e) {
-            draggedAsset = e.target.dataset.asset;
+        function toggleCategory(element) {
+            const grid = element.nextElementSibling;
             
-            // Create drag helper
-            dragHelper = document.createElement('div');
-            dragHelper.className = 'drag-helper';
-            dragHelper.textContent = draggedAsset;
-            document.body.appendChild(dragHelper);
-            
-            e.dataTransfer.effectAllowed = 'copy';
-        }
-
-        function handleDrag(e) {
-            if (dragHelper && e.clientX && e.clientY) {
-                dragHelper.style.left = e.clientX + 'px';
-                dragHelper.style.top = e.clientY + 'px';
+            if (grid.classList.contains('hidden')) {
+                grid.classList.remove('hidden');
+                element.classList.add('expanded');
+            } else {
+                grid.classList.add('hidden');
+                element.classList.remove('expanded');
             }
         }
 
-        function handleDragEnd(e) {
-            if (dragHelper) {
-                document.body.removeChild(dragHelper);
-                dragHelper = null;
-            }
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-        }
-
-        function handleDragEnter(e) {
-            e.preventDefault();
-            e.target.classList.add('drag-over');
-        }
-
-        function handleDragLeave(e) {
-            if (!e.target.contains(e.relatedTarget)) {
-                e.target.classList.remove('drag-over');
-            }
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.target.classList.remove('drag-over');
-            
-            if (draggedAsset) {
-                const canvas = document.getElementById('canvas');
-                const rect = canvas.getBoundingClientRect();
-                
-                // Calculate position relative to canvas
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                createCanvasItem(draggedAsset, x, y);
-                draggedAsset = null;
-            }
-        }
-
-        function createCanvasItem(asset, x, y) {
+        function addToCanvas(emoji) {
             const canvas = document.getElementById('canvas');
             const item = document.createElement('div');
-            const itemId = 'item-' + (++itemCounter);
             
-            item.className = 'draggable-item';
-            item.id = itemId;
-            item.textContent = asset;
-            item.style.left = Math.max(0, Math.min(x - 30, canvas.clientWidth - 60)) + 'px';
-            item.style.top = Math.max(0, Math.min(y - 30, canvas.clientHeight - 60)) + 'px';
-            item.style.fontSize = '3em';
-            item.style.zIndex = 100 + canvasItems.length;
+            itemCounter++;
+            item.id = 'item-' + itemCounter;
+            item.className = 'canvas-item';
+            item.textContent = emoji;
+            
+            // Random position
+            const maxX = canvas.clientWidth - 60;
+            const maxY = canvas.clientHeight - 60;
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+            
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+            item.style.zIndex = itemCounter;
             
             // Add delete button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-btn';
             deleteBtn.innerHTML = '×';
-            deleteBtn.onclick = () => removeCanvasItem(itemId);
+            deleteBtn.onclick = function(e) {
+                e.stopPropagation();
+                item.remove();
+                if (selectedItem === item) {
+                    selectedItem = null;
+                }
+            };
             item.appendChild(deleteBtn);
             
-            canvas.appendChild(item);
-            
-            // Store item data
-            canvasItems.push({
-                id: itemId,
-                asset: asset,
-                x: parseFloat(item.style.left),
-                y: parseFloat(item.style.top),
-                scale: 1
-            });
-            
-            // Add click handler for selection
-            item.addEventListener('click', (e) => {
+            // Add click handler
+            item.onclick = function(e) {
                 e.stopPropagation();
-                selectItem(itemId);
+                selectItem(item);
+            };
+            
+            // Add drag functionality
+            item.addEventListener('mousedown', startDrag);
+            
+            canvas.appendChild(item);
+        }
+
+        function selectItem(item) {
+            // Remove selection from all items
+            document.querySelectorAll('.canvas-item').forEach(i => {
+                i.classList.remove('selected');
             });
             
-            // Make it draggable within canvas
-            makeItemDraggable(item);
+            // Select this item
+            item.classList.add('selected');
+            selectedItem = item;
         }
 
-        function makeItemDraggable(item) {
-            let isDragging = false;
-            let startX, startY, initialX, initialY;
+        function startDrag(e) {
+            if (e.target.classList.contains('delete-btn')) return;
             
-            item.addEventListener('mousedown', (e) => {
-                if (e.target.classList.contains('delete-btn')) return;
-                
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                initialX = parseFloat(item.style.left) || 0;
-                initialY = parseFloat(item.style.top) || 0;
-                
-                selectItem(item.id);
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-                
-                e.preventDefault();
-            });
+            isDragging = true;
+            const item = e.currentTarget;
+            selectItem(item);
             
-            function handleMouseMove(e) {
-                if (!isDragging) return;
-                
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                
-                const newX = Math.max(0, Math.min(initialX + dx, document.getElementById('canvas').clientWidth - 60));
-                const newY = Math.max(0, Math.min(initialY + dy, document.getElementById('canvas').clientHeight - 60));
-                
-                item.style.left = newX + 'px';
-                item.style.top = newY + 'px';
-                
-                // Update stored position
-                const itemData = canvasItems.find(i => i.id === item.id);
-                if (itemData) {
-                    itemData.x = newX;
-                    itemData.y = newY;
-                }
-            }
+            dragStart.x = e.clientX - parseInt(item.style.left);
+            dragStart.y = e.clientY - parseInt(item.style.top);
             
-            function handleMouseUp() {
-                isDragging = false;
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-            }
-        }
-
-        function setupCanvasInteractions() {
-            // Click canvas to deselect
-            document.getElementById('canvas').addEventListener('click', (e) => {
-                if (e.target.id === 'canvas' || e.target.id === 'dropZone') {
-                    deselectAll();
-                }
-            });
-        }
-
-        function selectItem(itemId) {
-            // Deselect all items
-            deselectAll();
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
             
-            // Select the clicked item
-            const item = document.getElementById(itemId);
-            if (item) {
-                item.classList.add('selected');
-                selectedElement = itemId;
-            }
+            e.preventDefault();
         }
 
-        function deselectAll() {
-            document.querySelectorAll('.draggable-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            selectedElement = null;
-        }
-
-        function removeCanvasItem(itemId) {
-            const item = document.getElementById(itemId);
-            if (item) {
-                item.remove();
-                canvasItems = canvasItems.filter(i => i.id !== itemId);
-                
-                if (selectedElement === itemId) {
-                    selectedElement = null;
-                }
-            }
-        }
-
-        function toggleCategory(element) {
-            const grid = element.nextElementSibling;
+        function drag(e) {
+            if (!isDragging || !selectedItem) return;
             
-            if (element.classList.contains('collapsed')) {
-                element.classList.remove('collapsed');
-                element.classList.add('expanded');
-                grid.classList.remove('hidden');
-            } else {
-                element.classList.remove('expanded');
-                element.classList.add('collapsed');
-                grid.classList.add('hidden');
-            }
+            const canvas = document.getElementById('canvas');
+            const newX = Math.max(0, Math.min(e.clientX - dragStart.x, canvas.clientWidth - 60));
+            const newY = Math.max(0, Math.min(e.clientY - dragStart.y, canvas.clientHeight - 60));
+            
+            selectedItem.style.left = newX + 'px';
+            selectedItem.style.top = newY + 'px';
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
         }
 
         function resizeSelected(scale) {
-            if (!selectedElement) {
+            if (!selectedItem) {
                 alert('Please select an item first by clicking on it!');
                 return;
             }
             
-            const item = document.getElementById(selectedElement);
-            if (item) {
-                const newSize = 3 * scale; // Base size is 3em
-                item.style.fontSize = newSize + 'em';
-                
-                // Update stored scale
-                const itemData = canvasItems.find(i => i.id === selectedElement);
-                if (itemData) {
-                    itemData.scale = scale;
-                }
-            }
+            selectedItem.style.fontSize = (3 * scale) + 'em';
         }
 
         function clearCanvas() {
-            if (confirm('Are you sure you want to clear all items?')) {
-                document.querySelectorAll('.draggable-item').forEach(item => {
-                    item.remove();
-                });
-                canvasItems = [];
-                selectedElement = null;
+            if (confirm('Clear all items?')) {
+                document.getElementById('canvas').innerHTML = '';
+                selectedItem = null;
+                itemCounter = 0;
             }
-        }
-
-        function saveCharacter() {
-            if (canvasItems.length === 0) {
-                alert('Add some items to your character first!');
-                return;
-            }
-            
-            // Create a simple save data
-            const saveData = {
-                items: canvasItems,
-                timestamp: new Date().toISOString()
-            };
-            
-            // For demo purposes, just show the data
-            alert('Character saved! Items: ' + canvasItems.map(item => item.asset).join(' '));
-            
-            // In a real app, you could save to localStorage or send to a server
-            localStorage.setItem('character-builder-save', JSON.stringify(saveData));
         }
 
         function randomCharacter() {
-            // Clear canvas first
             clearCanvas();
             
-            // Define some random character combinations
-            const randomCombos = [
-                [
-                    { asset: '🧍‍♀️', x: 200, y: 150, scale: 1.5 },
-                    { asset: '👑', x: 215, y: 130, scale: 1 },
-                    { asset: '👗', x: 210, y: 200, scale: 1.2 },
-                    { asset: '👠', x: 205, y: 280, scale: 1 }
-                ],
-                [
-                    { asset: '🧍‍♂️', x: 200, y: 150, scale: 1.5 },
-                    { asset: '🧢', x: 215, y: 130, scale: 1 },
-                    { asset: '👕', x: 210, y: 200, scale: 1.2 },
-                    { asset: '👖', x: 210, y: 240, scale: 1.2 },
-                    { asset: '👟', x: 205, y: 280, scale: 1 }
-                ],
-                [
-                    { asset: '🧚‍♀️', x: 200, y: 150, scale: 1.5 },
-                    { asset: '✨', x: 150, y: 120, scale: 0.8 },
-                    { asset: '⭐', x: 280, y: 140, scale: 0.8 },
-                    { asset: '🌟', x: 160, y: 200, scale: 0.8 }
-                ]
-            ];
+            const randomItems = ['🧍‍♀️', '👑', '👗', '👠', '✨'];
             
-            const randomCombo = randomCombos[Math.floor(Math.random() * randomCombos.length)];
-            
-            randomCombo.forEach(item => {
-                createCanvasItem(item.asset, item.x, item.y);
-                // Apply scale after creation
+            randomItems.forEach((emoji, index) => {
                 setTimeout(() => {
-                    const lastItem = document.getElementById('item-' + itemCounter);
-                    if (lastItem) {
-                        lastItem.style.fontSize = (3 * item.scale) + 'em';
-                    }
-                }, 10);
+                    addToCanvas(emoji);
+                }, index * 200);
             });
         }
 
-        // Load saved character on page load
-        function loadSavedCharacter() {
-            const saved = localStorage.getItem('character-builder-save');
-            if (saved) {
-                try {
-                    const saveData = JSON.parse(saved);
-                    if (saveData.items && saveData.items.length > 0) {
-                        saveData.items.forEach(item => {
-                            createCanvasItem(item.asset, item.x, item.y);
-                            // Apply saved scale
-                            setTimeout(() => {
-                                const lastItem = document.getElementById('item-' + itemCounter);
-                                if (lastItem) {
-                                    lastItem.style.fontSize = (3 * item.scale) + 'em';
-                                }
-                            }, 10);
-                        });
-                    }
-                } catch (e) {
-                    console.log('Could not load saved character');
+        // Click canvas to deselect
+        document.getElementById('canvas').addEventListener('click', function(e) {
+            if (e.target.id === 'canvas') {
+                if (selectedItem) {
+                    selectedItem.classList.remove('selected');
+                    selectedItem = null;
                 }
             }
-        }
-
-        // Auto-load saved character
-        setTimeout(loadSavedCharacter, 500);
+        });
+    </script>
+</body>
+</html>
