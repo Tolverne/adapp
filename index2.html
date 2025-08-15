@@ -652,4 +652,210 @@
                 isDragging = true;
                 startX = e.clientX;
                 startY = e.clientY;
-                initialX
+                initialX = parseFloat(item.style.left) || 0;
+                initialY = parseFloat(item.style.top) || 0;
+                
+                selectItem(item.id);
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                
+                e.preventDefault();
+            });
+            
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                const newX = Math.max(0, Math.min(initialX + dx, document.getElementById('canvas').clientWidth - 60));
+                const newY = Math.max(0, Math.min(initialY + dy, document.getElementById('canvas').clientHeight - 60));
+                
+                item.style.left = newX + 'px';
+                item.style.top = newY + 'px';
+                
+                // Update stored position
+                const itemData = canvasItems.find(i => i.id === item.id);
+                if (itemData) {
+                    itemData.x = newX;
+                    itemData.y = newY;
+                }
+            }
+            
+            function handleMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+        }
+
+        function setupCanvasInteractions() {
+            // Click canvas to deselect
+            document.getElementById('canvas').addEventListener('click', (e) => {
+                if (e.target.id === 'canvas' || e.target.id === 'dropZone') {
+                    deselectAll();
+                }
+            });
+        }
+
+        function selectItem(itemId) {
+            // Deselect all items
+            deselectAll();
+            
+            // Select the clicked item
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.classList.add('selected');
+                selectedElement = itemId;
+            }
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.draggable-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            selectedElement = null;
+        }
+
+        function removeCanvasItem(itemId) {
+            const item = document.getElementById(itemId);
+            if (item) {
+                item.remove();
+                canvasItems = canvasItems.filter(i => i.id !== itemId);
+                
+                if (selectedElement === itemId) {
+                    selectedElement = null;
+                }
+            }
+        }
+
+        function toggleCategory(element) {
+            const grid = element.nextElementSibling;
+            
+            if (element.classList.contains('collapsed')) {
+                element.classList.remove('collapsed');
+                element.classList.add('expanded');
+                grid.classList.remove('hidden');
+            } else {
+                element.classList.remove('expanded');
+                element.classList.add('collapsed');
+                grid.classList.add('hidden');
+            }
+        }
+
+        function resizeSelected(scale) {
+            if (!selectedElement) {
+                alert('Please select an item first by clicking on it!');
+                return;
+            }
+            
+            const item = document.getElementById(selectedElement);
+            if (item) {
+                const newSize = 3 * scale; // Base size is 3em
+                item.style.fontSize = newSize + 'em';
+                
+                // Update stored scale
+                const itemData = canvasItems.find(i => i.id === selectedElement);
+                if (itemData) {
+                    itemData.scale = scale;
+                }
+            }
+        }
+
+        function clearCanvas() {
+            if (confirm('Are you sure you want to clear all items?')) {
+                document.querySelectorAll('.draggable-item').forEach(item => {
+                    item.remove();
+                });
+                canvasItems = [];
+                selectedElement = null;
+            }
+        }
+
+        function saveCharacter() {
+            if (canvasItems.length === 0) {
+                alert('Add some items to your character first!');
+                return;
+            }
+            
+            // Create a simple save data
+            const saveData = {
+                items: canvasItems,
+                timestamp: new Date().toISOString()
+            };
+            
+            // For demo purposes, just show the data
+            alert('Character saved! Items: ' + canvasItems.map(item => item.asset).join(' '));
+            
+            // In a real app, you could save to localStorage or send to a server
+            localStorage.setItem('character-builder-save', JSON.stringify(saveData));
+        }
+
+        function randomCharacter() {
+            // Clear canvas first
+            clearCanvas();
+            
+            // Define some random character combinations
+            const randomCombos = [
+                [
+                    { asset: '🧍‍♀️', x: 200, y: 150, scale: 1.5 },
+                    { asset: '👑', x: 215, y: 130, scale: 1 },
+                    { asset: '👗', x: 210, y: 200, scale: 1.2 },
+                    { asset: '👠', x: 205, y: 280, scale: 1 }
+                ],
+                [
+                    { asset: '🧍‍♂️', x: 200, y: 150, scale: 1.5 },
+                    { asset: '🧢', x: 215, y: 130, scale: 1 },
+                    { asset: '👕', x: 210, y: 200, scale: 1.2 },
+                    { asset: '👖', x: 210, y: 240, scale: 1.2 },
+                    { asset: '👟', x: 205, y: 280, scale: 1 }
+                ],
+                [
+                    { asset: '🧚‍♀️', x: 200, y: 150, scale: 1.5 },
+                    { asset: '✨', x: 150, y: 120, scale: 0.8 },
+                    { asset: '⭐', x: 280, y: 140, scale: 0.8 },
+                    { asset: '🌟', x: 160, y: 200, scale: 0.8 }
+                ]
+            ];
+            
+            const randomCombo = randomCombos[Math.floor(Math.random() * randomCombos.length)];
+            
+            randomCombo.forEach(item => {
+                createCanvasItem(item.asset, item.x, item.y);
+                // Apply scale after creation
+                setTimeout(() => {
+                    const lastItem = document.getElementById('item-' + itemCounter);
+                    if (lastItem) {
+                        lastItem.style.fontSize = (3 * item.scale) + 'em';
+                    }
+                }, 10);
+            });
+        }
+
+        // Load saved character on page load
+        function loadSavedCharacter() {
+            const saved = localStorage.getItem('character-builder-save');
+            if (saved) {
+                try {
+                    const saveData = JSON.parse(saved);
+                    if (saveData.items && saveData.items.length > 0) {
+                        saveData.items.forEach(item => {
+                            createCanvasItem(item.asset, item.x, item.y);
+                            // Apply saved scale
+                            setTimeout(() => {
+                                const lastItem = document.getElementById('item-' + itemCounter);
+                                if (lastItem) {
+                                    lastItem.style.fontSize = (3 * item.scale) + 'em';
+                                }
+                            }, 10);
+                        });
+                    }
+                } catch (e) {
+                    console.log('Could not load saved character');
+                }
+            }
+        }
+
+        // Auto-load saved character
+        setTimeout(loadSavedCharacter, 500);
