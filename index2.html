@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Doll Designer 🎀</title>
+    <title>🎭 Character Builder Studio 🎭</title>
     <style>
         * {
             margin: 0;
@@ -13,430 +13,643 @@
 
         body {
             font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .title {
-            text-align: center;
-            color: #ff1493;
-            font-size: 3em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
-        .game-area {
             display: grid;
-            grid-template-columns: 1fr 300px 1fr;
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: 300px 1fr 300px;
+            height: 100vh;
+            gap: 10px;
+            padding: 10px;
         }
 
-        .clothing-options, .hair-options {
-            background: rgba(255, 255, 255, 0.9);
+        .asset-panel {
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .section-title {
-            color: #ff1493;
-            font-size: 1.8em;
+        .canvas-area {
+            background: white;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 4px solid #ff6b6b;
+        }
+
+        .canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(45deg, #f0f8ff 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f0f8ff 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f0f8ff 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f0f8ff 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+
+        .canvas-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .panel-title {
+            color: #4a4a4a;
+            font-size: 1.3em;
             margin-bottom: 15px;
             text-align: center;
+            border-bottom: 3px solid #ff6b6b;
+            padding-bottom: 8px;
         }
 
-        .doll-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 30px;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            backdrop-filter: blur(8px);
-            border: 3px solid #ff69b4;
+        .asset-category {
+            margin-bottom: 20px;
         }
 
-        .doll {
-            width: 250px;
-            height: 400px;
-            margin: 0 auto;
-            position: relative;
-            background: #fdbcb4;
-            border-radius: 50px 50px 20px 20px;
-            border: 3px solid #333;
-        }
-
-        .doll-head {
-            width: 120px;
-            height: 140px;
-            background: #fdbcb4;
-            border-radius: 50%;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 3px solid #333;
-        }
-
-        .doll-eyes {
-            position: absolute;
-            top: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-        }
-
-        .eye {
-            width: 15px;
-            height: 15px;
-            background: #333;
-            border-radius: 50%;
-        }
-
-        .doll-mouth {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 10px;
-            border: 2px solid #ff1493;
-            border-top: none;
-            border-radius: 0 0 20px 20px;
-        }
-
-        .clothing-item, .hair-item {
-            width: 80px;
-            height: 80px;
-            margin: 10px;
-            border-radius: 15px;
+        .category-title {
+            color: #ff6b6b;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
             cursor: pointer;
-            border: 3px solid transparent;
+            padding: 8px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
             transition: all 0.3s ease;
-            display: inline-flex;
+        }
+
+        .category-title:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .category-title.collapsed::after {
+            content: ' ▼';
+        }
+
+        .category-title.expanded::after {
+            content: ' ▲';
+        }
+
+        .asset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .asset-grid.hidden {
+            display: none;
+        }
+
+        .asset-item {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
             justify-content: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
             font-size: 2em;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .clothing-item:hover, .hair-item:hover {
-            transform: scale(1.1) rotate(5deg);
-            border-color: #ff69b4;
-            box-shadow: 0 8px 25px rgba(255, 105, 180, 0.3);
+        .asset-item:hover {
+            transform: scale(1.1);
+            border-color: #ff6b6b;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
         }
 
-        .selected {
-            border-color: #ff1493 !important;
-            background: #ffe4e1 !important;
+        .asset-item:active {
+            cursor: grabbing;
+        }
+
+        .draggable-item {
+            position: absolute;
+            cursor: move;
+            transition: transform 0.1s ease;
+            z-index: 100;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            user-select: none;
+        }
+
+        .draggable-item:hover {
+            border-color: #ff6b6b;
             transform: scale(1.05);
         }
 
-        .current-hair {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 3em;
-            z-index: 10;
+        .draggable-item.selected {
+            border-color: #4ecdc4;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
         }
 
-        .current-top {
+        .draggable-item .delete-btn {
             position: absolute;
-            top: 160px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2.5em;
-        }
-
-        .current-bottom {
-            position: absolute;
-            top: 240px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2.5em;
-        }
-
-        .current-shoes {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2em;
-        }
-
-        .reset-btn {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #ff4757;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.2em;
+            border-radius: 50%;
             cursor: pointer;
-            margin-top: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            font-family: 'Comic Sans MS', cursive;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .reset-btn:hover {
+        .draggable-item:hover .delete-btn,
+        .draggable-item.selected .delete-btn {
+            display: flex;
+        }
+
+        .control-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .control-btn:hover {
+            background: #45b7aa;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        .sparkles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
+        .clear-btn {
+            background: #ff6b6b;
         }
 
-        .sparkle {
-            position: absolute;
-            color: #ff69b4;
-            animation: sparkle 2s infinite;
-            font-size: 1.5em;
+        .clear-btn:hover {
+            background: #ff5252;
         }
 
-        @keyframes sparkle {
-            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        .layers-info {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #666;
+            max-width: 200px;
+        }
+
+        .size-controls {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 10px;
+        }
+
+        .size-title {
+            color: #4ecdc4;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .size-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .size-btn {
+            background: white;
+            border: 2px solid #4ecdc4;
+            color: #4ecdc4;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .size-btn:hover {
+            background: #4ecdc4;
+            color: white;
         }
 
         @media (max-width: 768px) {
-            .game-area {
+            .container {
                 grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-rows: auto 1fr auto;
+                height: 100vh;
             }
             
-            .doll {
-                width: 200px;
-                height: 320px;
+            .asset-panel {
+                max-height: 200px;
             }
             
-            .title {
-                font-size: 2em;
+            .canvas-area {
+                min-height: 400px;
             }
+        }
+
+        .drag-helper {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            font-size: 2em;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+        }
+
+        .drop-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px dashed transparent;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">🎀 Design Your Doll! 🎀</h1>
-        
-        <div class="game-area">
-            <div class="clothing-options">
-                <h3 class="section-title">👕 Clothes 👕</h3>
-                
-                <h4 style="color: #ff69b4; margin: 15px 0;">Tops:</h4>
-                <div class="clothing-item" data-type="top" data-item="👕">👕</div>
-                <div class="clothing-item" data-type="top" data-item="👗">👗</div>
-                <div class="clothing-item" data-type="top" data-item="🎽">🎽</div>
-                <div class="clothing-item" data-type="top" data-item="👚">👚</div>
-                
-                <h4 style="color: #ff69b4; margin: 15px 0;">Bottoms:</h4>
-                <div class="clothing-item" data-type="bottom" data-item="👖">👖</div>
-                <div class="clothing-item" data-type="bottom" data-item="🩳">🩳</div>
-                <div class="clothing-item" data-type="bottom" data-item="👜">👜</div>
-                <div class="clothing-item" data-type="bottom" data-item="🎀">🎀</div>
-                
-                <h4 style="color: #ff69b4; margin: 15px 0;">Shoes:</h4>
-                <div class="clothing-item" data-type="shoes" data-item="👟">👟</div>
-                <div class="clothing-item" data-type="shoes" data-item="👠">👠</div>
-                <div class="clothing-item" data-type="shoes" data-item="🥿">🥿</div>
-                <div class="clothing-item" data-type="shoes" data-item="👢">👢</div>
-            </div>
-
-            <div class="doll-container">
-                <div class="sparkles" id="sparkles"></div>
-                <div class="doll">
-                    <div class="doll-head">
-                        <div class="doll-eyes">
-                            <div class="eye"></div>
-                            <div class="eye"></div>
-                        </div>
-                        <div class="doll-mouth"></div>
-                    </div>
-                    <div class="current-hair" id="currentHair">👧</div>
-                    <div class="current-top" id="currentTop">👕</div>
-                    <div class="current-bottom" id="currentBottom">👖</div>
-                    <div class="current-shoes" id="currentShoes">👟</div>
+        <!-- Left Panel - Character Parts -->
+        <div class="asset-panel">
+            <h3 class="panel-title">👤 Character Parts</h3>
+            
+            <div class="asset-category">
+                <div class="category-title expanded" onclick="toggleCategory(this)">👥 Bodies</div>
+                <div class="asset-grid">
+                    <div class="asset-item" data-asset="🧍" data-category="body">🧍</div>
+                    <div class="asset-item" data-asset="🧍‍♀️" data-category="body">🧍‍♀️</div>
+                    <div class="asset-item" data-asset="🧍‍♂️" data-category="body">🧍‍♂️</div>
+                    <div class="asset-item" data-asset="👶" data-category="body">👶</div>
+                    <div class="asset-item" data-asset="🧒" data-category="body">🧒</div>
+                    <div class="asset-item" data-asset="👧" data-category="body">👧</div>
+                    <div class="asset-item" data-asset="🧑" data-category="body">🧑</div>
+                    <div class="asset-item" data-asset="👨" data-category="body">👨</div>
+                    <div class="asset-item" data-asset="👩" data-category="body">👩</div>
+                    <div class="asset-item" data-asset="🧓" data-category="body">🧓</div>
+                    <div class="asset-item" data-asset="👴" data-category="body">👴</div>
+                    <div class="asset-item" data-asset="👵" data-category="body">👵</div>
                 </div>
-                <button class="reset-btn" onclick="resetDoll()">🔄 Start Over!</button>
             </div>
 
-            <div class="hair-options">
-                <h3 class="section-title">💇‍♀️ Hair Styles 💇‍♀️</h3>
-                
-                <div class="hair-item" data-hair="👧">👧</div>
-                <div class="hair-item" data-hair="👩">👩</div>
-                <div class="hair-item" data-hair="👱‍♀️">👱‍♀️</div>
-                <div class="hair-item" data-hair="👩‍🦰">👩‍🦰</div>
-                <div class="hair-item" data-hair="👩‍🦱">👩‍🦱</div>
-                <div class="hair-item" data-hair="👩‍🦳">👩‍🦳</div>
-                <div class="hair-item" data-hair="👸">👸</div>
-                <div class="hair-item" data-hair="🧚‍♀️">🧚‍♀️</div>
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">👗 Clothes</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="👔" data-category="clothes">👔</div>
+                    <div class="asset-item" data-asset="👕" data-category="clothes">👕</div>
+                    <div class="asset-item" data-asset="👖" data-category="clothes">👖</div>
+                    <div class="asset-item" data-asset="👗" data-category="clothes">👗</div>
+                    <div class="asset-item" data-asset="👘" data-category="clothes">👘</div>
+                    <div class="asset-item" data-asset="👚" data-category="clothes">👚</div>
+                    <div class="asset-item" data-asset="👙" data-category="clothes">👙</div>
+                    <div class="asset-item" data-asset="🩱" data-category="clothes">🩱</div>
+                    <div class="asset-item" data-asset="🩲" data-category="clothes">🩲</div>
+                    <div class="asset-item" data-asset="🩳" data-category="clothes">🩳</div>
+                    <div class="asset-item" data-asset="🧥" data-category="clothes">🧥</div>
+                    <div class="asset-item" data-asset="🧦" data-category="clothes">🧦</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">👟 Shoes</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="👟" data-category="shoes">👟</div>
+                    <div class="asset-item" data-asset="👠" data-category="shoes">👠</div>
+                    <div class="asset-item" data-asset="👡" data-category="shoes">👡</div>
+                    <div class="asset-item" data-asset="👢" data-category="shoes">👢</div>
+                    <div class="asset-item" data-asset="👞" data-category="shoes">👞</div>
+                    <div class="asset-item" data-asset="🥿" data-category="shoes">🥿</div>
+                    <div class="asset-item" data-asset="🩴" data-category="shoes">🩴</div>
+                    <div class="asset-item" data-asset="🥾" data-category="shoes">🥾</div>
+                    <div class="asset-item" data-asset="🩰" data-category="shoes">🩰</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">🎭 Faces</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="😀" data-category="face">😀</div>
+                    <div class="asset-item" data-asset="😃" data-category="face">😃</div>
+                    <div class="asset-item" data-asset="😄" data-category="face">😄</div>
+                    <div class="asset-item" data-asset="😁" data-category="face">😁</div>
+                    <div class="asset-item" data-asset="😅" data-category="face">😅</div>
+                    <div class="asset-item" data-asset="😂" data-category="face">😂</div>
+                    <div class="asset-item" data-asset="🙂" data-category="face">🙂</div>
+                    <div class="asset-item" data-asset="😉" data-category="face">😉</div>
+                    <div class="asset-item" data-asset="😊" data-category="face">😊</div>
+                    <div class="asset-item" data-asset="😇" data-category="face">😇</div>
+                    <div class="asset-item" data-asset="😋" data-category="face">😋</div>
+                    <div class="asset-item" data-asset="😎" data-category="face">😎</div>
+                    <div class="asset-item" data-asset="🤓" data-category="face">🤓</div>
+                    <div class="asset-item" data-asset="😐" data-category="face">😐</div>
+                    <div class="asset-item" data-asset="😕" data-category="face">😕</div>
+                    <div class="asset-item" data-asset="😟" data-category="face">😟</div>
+                    <div class="asset-item" data-asset="😮" data-category="face">😮</div>
+                    <div class="asset-item" data-asset="😯" data-category="face">😯</div>
+                </div>
+            </div>
+
+            <div class="size-controls">
+                <div class="size-title">📏 Resize Selected:</div>
+                <div class="size-buttons">
+                    <button class="size-btn" onclick="resizeSelected(0.5)">Tiny</button>
+                    <button class="size-btn" onclick="resizeSelected(0.8)">Small</button>
+                    <button class="size-btn" onclick="resizeSelected(1)">Normal</button>
+                    <button class="size-btn" onclick="resizeSelected(1.5)">Big</button>
+                    <button class="size-btn" onclick="resizeSelected(2)">Huge</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center - Canvas -->
+        <div class="canvas-area">
+            <div class="canvas-title">🎨 Drag & Drop Character Builder 🎨</div>
+            <div class="canvas" id="canvas">
+                <div class="drop-zone" id="dropZone"></div>
+            </div>
+            <div class="control-panel">
+                <button class="control-btn" onclick="saveCharacter()">💾 Save</button>
+                <button class="control-btn clear-btn" onclick="clearCanvas()">🗑️ Clear All</button>
+                <button class="control-btn" onclick="randomCharacter()">🎲 Random</button>
+            </div>
+            <div class="layers-info">
+                <strong>💡 Tips:</strong><br>
+                • Drag items from the panels<br>
+                • Click items to select/move<br>
+                • Use resize buttons<br>
+                • Layer items on top of each other<br>
+                • Have fun creating!
+            </div>
+        </div>
+
+        <!-- Right Panel - Accessories & Effects -->
+        <div class="asset-panel">
+            <h3 class="panel-title">✨ Accessories & More</h3>
+            
+            <div class="asset-category">
+                <div class="category-title expanded" onclick="toggleCategory(this)">👑 Hats & Hair</div>
+                <div class="asset-grid">
+                    <div class="asset-item" data-asset="👑" data-category="hat">👑</div>
+                    <div class="asset-item" data-asset="👒" data-category="hat">👒</div>
+                    <div class="asset-item" data-asset="🎓" data-category="hat">🎓</div>
+                    <div class="asset-item" data-asset="🧢" data-category="hat">🧢</div>
+                    <div class="asset-item" data-asset="⛑️" data-category="hat">⛑️</div>
+                    <div class="asset-item" data-asset="🎩" data-category="hat">🎩</div>
+                    <div class="asset-item" data-asset="👶" data-category="hair">👶</div>
+                    <div class="asset-item" data-asset="🦳" data-category="hair">🦳</div>
+                    <div class="asset-item" data-asset="🦲" data-category="hair">🦲</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">🕶️ Glasses & Eyes</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="🕶️" data-category="glasses">🕶️</div>
+                    <div class="asset-item" data-asset="👓" data-category="glasses">👓</div>
+                    <div class="asset-item" data-asset="🥽" data-category="glasses">🥽</div>
+                    <div class="asset-item" data-asset="👁️" data-category="eyes">👁️</div>
+                    <div class="asset-item" data-asset="👀" data-category="eyes">👀</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">🎒 Bags & Items</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="🎒" data-category="bag">🎒</div>
+                    <div class="asset-item" data-asset="👜" data-category="bag">👜</div>
+                    <div class="asset-item" data-asset="👝" data-category="bag">👝</div>
+                    <div class="asset-item" data-asset="🛍️" data-category="bag">🛍️</div>
+                    <div class="asset-item" data-asset="💼" data-category="bag">💼</div>
+                    <div class="asset-item" data-asset="⚽" data-category="item">⚽</div>
+                    <div class="asset-item" data-asset="🏀" data-category="item">🏀</div>
+                    <div class="asset-item" data-asset="📱" data-category="item">📱</div>
+                    <div class="asset-item" data-asset="🎮" data-category="item">🎮</div>
+                    <div class="asset-item" data-asset="📚" data-category="item">📚</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">🌟 Magic & Fantasy</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="🧙‍♀️" data-category="fantasy">🧙‍♀️</div>
+                    <div class="asset-item" data-asset="🧙‍♂️" data-category="fantasy">🧙‍♂️</div>
+                    <div class="asset-item" data-asset="🧚‍♀️" data-category="fantasy">🧚‍♀️</div>
+                    <div class="asset-item" data-asset="🧚‍♂️" data-category="fantasy">🧚‍♂️</div>
+                    <div class="asset-item" data-asset="🦸‍♀️" data-category="fantasy">🦸‍♀️</div>
+                    <div class="asset-item" data-asset="🦸‍♂️" data-category="fantasy">🦸‍♂️</div>
+                    <div class="asset-item" data-asset="🦹‍♀️" data-category="fantasy">🦹‍♀️</div>
+                    <div class="asset-item" data-asset="🦹‍♂️" data-category="fantasy">🦹‍♂️</div>
+                    <div class="asset-item" data-asset="⭐" data-category="effect">⭐</div>
+                    <div class="asset-item" data-asset="✨" data-category="effect">✨</div>
+                    <div class="asset-item" data-asset="💫" data-category="effect">💫</div>
+                    <div class="asset-item" data-asset="🌟" data-category="effect">🌟</div>
+                    <div class="asset-item" data-asset="💖" data-category="effect">💖</div>
+                    <div class="asset-item" data-asset="💝" data-category="effect">💝</div>
+                    <div class="asset-item" data-asset="🎁" data-category="effect">🎁</div>
+                </div>
+            </div>
+
+            <div class="asset-category">
+                <div class="category-title collapsed" onclick="toggleCategory(this)">🐾 Animals & Pets</div>
+                <div class="asset-grid hidden">
+                    <div class="asset-item" data-asset="🐶" data-category="animal">🐶</div>
+                    <div class="asset-item" data-asset="🐱" data-category="animal">🐱</div>
+                    <div class="asset-item" data-asset="🐭" data-category="animal">🐭</div>
+                    <div class="asset-item" data-asset="🐹" data-category="animal">🐹</div>
+                    <div class="asset-item" data-asset="🐰" data-category="animal">🐰</div>
+                    <div class="asset-item" data-asset="🦊" data-category="animal">🦊</div>
+                    <div class="asset-item" data-asset="🐻" data-category="animal">🐻</div>
+                    <div class="asset-item" data-asset="🐼" data-category="animal">🐼</div>
+                    <div class="asset-item" data-asset="🐨" data-category="animal">🐨</div>
+                    <div class="asset-item" data-asset="🐯" data-category="animal">🐯</div>
+                    <div class="asset-item" data-asset="🦁" data-category="animal">🦁</div>
+                    <div class="asset-item" data-asset="🐸" data-category="animal">🐸</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentOutfit = {
-            hair: '👧',
-            top: '👕',
-            bottom: '👖',
-            shoes: '👟'
-        };
+        let draggedAsset = null;
+        let selectedElement = null;
+        let dragHelper = null;
+        let canvasItems = [];
+        let itemCounter = 0;
 
-        // Add sparkle effects
-        function createSparkle() {
-            const sparkle = document.createElement('div');
-            sparkle.className = 'sparkle';
-            sparkle.innerHTML = '✨';
-            sparkle.style.left = Math.random() * 100 + '%';
-            sparkle.style.top = Math.random() * 100 + '%';
-            sparkle.style.animationDelay = Math.random() * 2 + 's';
-            
-            document.getElementById('sparkles').appendChild(sparkle);
-            
-            setTimeout(() => {
-                sparkle.remove();
-            }, 2000);
-        }
-
-        // Create sparkles periodically
-        setInterval(createSparkle, 500);
-
-        // Handle clothing selection
-        document.querySelectorAll('.clothing-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const type = this.dataset.type;
-                const itemEmoji = this.dataset.item;
-                
-                // Remove previous selection in this category
-                document.querySelectorAll(`[data-type="${type}"]`).forEach(el => {
-                    el.classList.remove('selected');
-                });
-                
-                // Add selection to clicked item
-                this.classList.add('selected');
-                
-                // Update doll
-                currentOutfit[type] = itemEmoji;
-                document.getElementById('current' + type.charAt(0).toUpperCase() + type.slice(1)).textContent = itemEmoji;
-                
-                // Add fun animation
-                const dollElement = document.getElementById('current' + type.charAt(0).toUpperCase() + type.slice(1));
-                dollElement.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    dollElement.style.transform = 'scale(1)';
-                }, 200);
-
-                // Create celebration sparkles
-                for(let i = 0; i < 5; i++) {
-                    setTimeout(() => createSparkle(), i * 100);
-                }
-            });
-        });
-
-        // Handle hair selection
-        document.querySelectorAll('.hair-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const hairEmoji = this.dataset.hair;
-                
-                // Remove previous hair selection
-                document.querySelectorAll('.hair-item').forEach(el => {
-                    el.classList.remove('selected');
-                });
-                
-                // Add selection to clicked item
-                this.classList.add('selected');
-                
-                // Update doll
-                currentOutfit.hair = hairEmoji;
-                document.getElementById('currentHair').textContent = hairEmoji;
-                
-                // Add fun animation
-                const hairElement = document.getElementById('currentHair');
-                hairElement.style.transform = 'scale(1.2) rotate(10deg)';
-                setTimeout(() => {
-                    hairElement.style.transform = 'scale(1) rotate(0deg)';
-                }, 200);
-
-                // Create celebration sparkles
-                for(let i = 0; i < 5; i++) {
-                    setTimeout(() => createSparkle(), i * 100);
-                }
-            });
-        });
-
-        // Reset function
-        function resetDoll() {
-            currentOutfit = {
-                hair: '👧',
-                top: '👕',
-                bottom: '👖',
-                shoes: '👟'
-            };
-            
-            document.getElementById('currentHair').textContent = '👧';
-            document.getElementById('currentTop').textContent = '👕';
-            document.getElementById('currentBottom').textContent = '👖';
-            document.getElementById('currentShoes').textContent = '👟';
-            
-            // Remove all selections
-            document.querySelectorAll('.clothing-item, .hair-item').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Add default selections
-            document.querySelector('[data-hair="👧"]').classList.add('selected');
-            document.querySelector('[data-type="top"][data-item="👕"]').classList.add('selected');
-            document.querySelector('[data-type="bottom"][data-item="👖"]').classList.add('selected');
-            document.querySelector('[data-type="shoes"][data-item="👟"]').classList.add('selected');
-
-            // Create lots of sparkles for celebration
-            for(let i = 0; i < 15; i++) {
-                setTimeout(() => createSparkle(), i * 50);
-            }
-        }
-
-        // Initialize with default selections
+        // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('[data-hair="👧"]').classList.add('selected');
-            document.querySelector('[data-type="top"][data-item="👕"]').classList.add('selected');
-            document.querySelector('[data-type="bottom"][data-item="👖"]').classList.add('selected');
-            document.querySelector('[data-type="shoes"][data-item="👟"]').classList.add('selected');
+            initializeDragAndDrop();
+            setupCanvasInteractions();
         });
 
-        // Add some initial sparkles
-        setTimeout(() => {
-            for(let i = 0; i < 10; i++) {
-                setTimeout(() => createSparkle(), i * 200);
+        function initializeDragAndDrop() {
+            // Add drag functionality to asset items
+            document.querySelectorAll('.asset-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('drag', handleDrag);
+                item.addEventListener('dragend', handleDragEnd);
+                item.draggable = true;
+            });
+
+            // Setup canvas drop zone
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragenter', handleDragEnter);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            dropZone.addEventListener('drop', handleDrop);
+        }
+
+        function handleDragStart(e) {
+            draggedAsset = e.target.dataset.asset;
+            
+            // Create drag helper
+            dragHelper = document.createElement('div');
+            dragHelper.className = 'drag-helper';
+            dragHelper.textContent = draggedAsset;
+            document.body.appendChild(dragHelper);
+            
+            e.dataTransfer.effectAllowed = 'copy';
+        }
+
+        function handleDrag(e) {
+            if (dragHelper && e.clientX && e.clientY) {
+                dragHelper.style.left = e.clientX + 'px';
+                dragHelper.style.top = e.clientY + 'px';
             }
-        }, 1000);
-    </script>
-</body>
-</html>
+        }
+
+        function handleDragEnd(e) {
+            if (dragHelper) {
+                document.body.removeChild(dragHelper);
+                dragHelper = null;
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            if (!e.target.contains(e.relatedTarget)) {
+                e.target.classList.remove('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            if (draggedAsset) {
+                const canvas = document.getElementById('canvas');
+                const rect = canvas.getBoundingClientRect();
+                
+                // Calculate position relative to canvas
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                createCanvasItem(draggedAsset, x, y);
+                draggedAsset = null;
+            }
+        }
+
+        function createCanvasItem(asset, x, y) {
+            const canvas = document.getElementById('canvas');
+            const item = document.createElement('div');
+            const itemId = 'item-' + (++itemCounter);
+            
+            item.className = 'draggable-item';
+            item.id = itemId;
+            item.textContent = asset;
+            item.style.left = Math.max(0, Math.min(x - 30, canvas.clientWidth - 60)) + 'px';
+            item.style.top = Math.max(0, Math.min(y - 30, canvas.clientHeight - 60)) + 'px';
+            item.style.fontSize = '3em';
+            item.style.zIndex = 100 + canvasItems.length;
+            
+            // Add delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.onclick = () => removeCanvasItem(itemId);
+            item.appendChild(deleteBtn);
+            
+            canvas.appendChild(item);
+            
+            // Store item data
+            canvasItems.push({
+                id: itemId,
+                asset: asset,
+                x: parseFloat(item.style.left),
+                y: parseFloat(item.style.top),
+                scale: 1
+            });
+            
+            // Add click handler for selection
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectItem(itemId);
+            });
+            
+            // Make it draggable within canvas
+            makeItemDraggable(item);
+        }
+
+        function makeItemDraggable(item) {
+            let isDragging = false;
+            let startX, startY, initialX, initialY;
+            
+            item.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('delete-btn')) return;
+                
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialX
